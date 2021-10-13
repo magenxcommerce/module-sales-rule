@@ -261,6 +261,9 @@
     <entity name="SalesRuleNoCouponWithFixedDiscount" extends="ApiCartRule">
         <data key="simple_action">by_fixed</data>
     </entity>
+    <entity name="SalesRuleNoCouponWithFixedDiscountWholeCart" extends="ApiCartRule">
+        <data key="simple_action">cart_fixed</data>
+    </entity>
     <entity name="ActiveSalesRuleWithPercentPriceDiscountCoupon">
         <data key="name" unique="suffix">Cart Price Rule with Specific Coupon</data>
         <data key="description">Description for Cart Price Rule</data>
@@ -463,5 +466,14 @@
         <data key="simple_free_shipping">0</data>
         <requiredEntity type="SalesRuleLabel">SalesRuleLabelDefault</requiredEntity>
         <requiredEntity type="SalesRuleLabel">SalesRuleLabelStore1</requiredEntity>
+    </entity>
+
+    <entity name="TestSalesRuleWithInvalidData" type="SalesRule">
+        <data key="userPerCustomer">one</data>
+        <data key="userPerCoupon">one</data>
+        <data key="priority">one</data>
+        <data key="discountStep">one</data>
+        <data key="discountAmount">one</data>
+        <data key="maximumQtyDiscount">one</data>
     </entity>
 </entities>
