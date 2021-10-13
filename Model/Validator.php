@@ -182,8 +182,6 @@ class Validator extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Address id getter.
-     *
      * @param Address $address
      * @return string
      */
@@ -243,8 +241,6 @@ class Validator extends \Magento\Framework\Model\AbstractModel
     public function reset(Address $address)
     {
         $this->validatorUtility->resetRoundingDeltas();
-        $address->setBaseSubtotalWithDiscount($address->getBaseSubtotal());
-        $address->setSubtotalWithDiscount($address->getSubtotal());
         if ($this->_isFirstTimeResetRun) {
             $address->setAppliedRuleIds('');
             $address->getQuote()->setAppliedRuleIds('');
@@ -265,13 +261,6 @@ class Validator extends \Magento\Framework\Model\AbstractModel
         $item->setDiscountAmount(0);
         $item->setBaseDiscountAmount(0);
         $item->setDiscountPercent(0);
-        if ($item->getChildren() && $item->isChildrenCalculated()) {
-            foreach ($item->getChildren() as $child) {
-                $child->setDiscountAmount(0);
-                $child->setBaseDiscountAmount(0);
-                $child->setDiscountPercent(0);
-            }
-        }
 
         $itemPrice = $this->getItemPrice($item);
         if ($itemPrice < 0) {
@@ -338,7 +327,21 @@ class Validator extends \Magento\Framework\Model\AbstractModel
                     $baseDiscountAmount = $rule->getDiscountAmount();
                     break;
                 case \Magento\SalesRule\Model\Rule::CART_FIXED_ACTION:
-                    // Shouldn't be proceed according to MAGETWO-96403
+                    $cartRules = $address->getCartFixedRules();
+                    if (!isset($cartRules[$rule->getId()])) {
+                        $cartRules[$rule->getId()] = $rule->getDiscountAmount();
+                    }
+                    if ($cartRules[$rule->getId()] > 0) {
+                        $quoteAmount = $this->priceCurrency->convert($cartRules[$rule->getId()], $quote->getStore());
+                        $discountAmount = min($shippingAmount - $address->getShippingDiscountAmount(), $quoteAmount);
+                        $baseDiscountAmount = min(
+                            $baseShippingAmount - $address->getBaseShippingDiscountAmount(),
+                            $cartRules[$rule->getId()]
+                        );
+                        $cartRules[$rule->getId()] -= $baseDiscountAmount;
+                    }
+
+                    $address->setCartFixedRules($cartRules);
                     break;
             }
 
@@ -390,7 +393,13 @@ class Validator extends \Magento\Framework\Model\AbstractModel
 
                 foreach ($items as $item) {
                     //Skipping child items to avoid double calculations
-                    if (!$this->isValidItemForRule($item, $rule)) {
+                    if ($item->getParentItemId()) {
+                        continue;
+                    }
+                    if (!$rule->getActions()->validate($item)) {
+                        continue;
+                    }
+                    if (!$this->canApplyDiscount($item)) {
                         continue;
                     }
                     $qty = $this->validatorUtility->getItemQty($item, $rule);
@@ -408,30 +417,6 @@ class Validator extends \Magento\Framework\Model\AbstractModel
         }
 
         return $this;
-    }
-
-    /**
-     * Determine if quote item is valid for a given sales rule
-     *
-     * @param AbstractItem $item
-     * @param Rule $rule
-     * @return bool
-     */
-    private function isValidItemForRule(AbstractItem $item, Rule $rule)
-    {
-        if ($item->getParentItemId()) {
-            return false;
-        }
-        if ($item->getParentItem()) {
-            return false;
-        }
-        if (!$rule->getActions()->validate($item)) {
-            return false;
-        }
-        if (!$this->canApplyDiscount($item)) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -534,8 +519,6 @@ class Validator extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Rule total items getter.
-     *
      * @param int $key
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
@@ -550,8 +533,6 @@ class Validator extends \Magento\Framework\Model\AbstractModel
     }
 
     /**
-     * Decrease rule items count.
-     *
      * @param int $key
      * @return $this
      */

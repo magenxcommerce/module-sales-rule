@@ -89,7 +89,6 @@ class Combine extends \Magento\Rule\Model\Condition\Combine
 
     /**
      * @inheritdoc
-     * @since 101.0.6
      */
     protected function _isValid($entity)
     {
@@ -146,8 +145,7 @@ class Combine extends \Magento\Rule\Model\Condition\Combine
     private function retrieveValidateEntities($attributeScope, \Magento\Framework\Model\AbstractModel $entity)
     {
         if ($attributeScope === 'parent') {
-            $parentItem = $entity->getParentItem();
-            $validateEntities = $parentItem ? [$parentItem] : [$entity];
+            $validateEntities = [$entity];
         } elseif ($attributeScope === 'children') {
             $validateEntities = $entity->getChildren() ?: [$entity];
         } else {

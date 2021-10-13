@@ -5,6 +5,7 @@
  */
 namespace Magento\SalesRule\Model\Rule\Action\Discount;
 
+use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\SalesRule\Model\DeltaPriceRound;
 use Magento\SalesRule\Model\Validator;
@@ -49,8 +50,6 @@ class CartFixed extends AbstractDiscount
     }
 
     /**
-     * Fixed discount for cart calculation
-     *
      * @param \Magento\SalesRule\Model\Rule $rule
      * @param \Magento\Quote\Model\Quote\Item\AbstractItem $item
      * @param float $qty
@@ -64,13 +63,25 @@ class CartFixed extends AbstractDiscount
         $ruleTotals = $this->validator->getRuleItemTotalsInfo($rule->getId());
 
         $quote = $item->getQuote();
+        $address = $item->getAddress();
 
         $itemPrice = $this->validator->getItemPrice($item);
         $baseItemPrice = $this->validator->getItemBasePrice($item);
         $itemOriginalPrice = $this->validator->getItemOriginalPrice($item);
         $baseItemOriginalPrice = $this->validator->getItemBaseOriginalPrice($item);
 
-        $cartRules = $quote->getCartFixedRules();
+        /**
+         * prevent applying whole cart discount for every shipping order, but only for first order
+         */
+        if ($quote->getIsMultiShipping()) {
+            $usedForAddressId = $this->getCartFixedRuleUsedForAddress($rule->getId());
+            if ($usedForAddressId && $usedForAddressId != $address->getId()) {
+                return $discountData;
+            } else {
+                $this->setCartFixedRuleUsedForAddress($rule->getId(), $address->getId());
+            }
+        }
+        $cartRules = $address->getCartFixedRules();
         if (!isset($cartRules[$rule->getId()])) {
             $cartRules[$rule->getId()] = $rule->getDiscountAmount();
         }
@@ -110,7 +121,7 @@ class CartFixed extends AbstractDiscount
             $discountData->setOriginalAmount(min($itemOriginalPrice * $qty, $quoteAmount));
             $discountData->setBaseOriginalAmount($this->priceCurrency->round($baseItemOriginalPrice));
         }
-        $quote->setCartFixedRules($cartRules);
+        $address->setCartFixedRules($cartRules);
 
         return $discountData;
     }
@@ -118,7 +129,6 @@ class CartFixed extends AbstractDiscount
     /**
      * Set information about usage cart fixed rule by quote address
      *
-     * @deprecated 101.2.0 should be removed as it is not longer used
      * @param int $ruleId
      * @param int $itemId
      * @return void
@@ -131,7 +141,6 @@ class CartFixed extends AbstractDiscount
     /**
      * Retrieve information about usage cart fixed rule by quote address
      *
-     * @deprecated 101.2.0 should be removed as it is not longer used
      * @param int $ruleId
      * @return int|null
      */

@@ -17,44 +17,23 @@ define([
     'mage/translate',
     'Magento_Checkout/js/action/get-payment-information',
     'Magento_Checkout/js/model/totals',
-    'Magento_Checkout/js/model/full-screen-loader',
-    'Magento_Checkout/js/action/recollect-shipping-rates'
+    'Magento_Checkout/js/model/full-screen-loader'
 ], function (ko, $, quote, urlManager, errorProcessor, messageContainer, storage, $t, getPaymentInformationAction,
-    totals, fullScreenLoader, recollectShippingRates
+    totals, fullScreenLoader
 ) {
     'use strict';
 
-    var dataModifiers = [],
-        successCallbacks = [],
-        failCallbacks = [],
-        action;
-
-    /**
-     * Apply provided coupon.
-     *
-     * @param {String} couponCode
-     * @param {Boolean}isApplied
-     * @returns {Deferred}
-     */
-    action = function (couponCode, isApplied) {
+    return function (couponCode, isApplied) {
         var quoteId = quote.getQuoteId(),
             url = urlManager.getApplyCouponUrl(couponCode, quoteId),
-            message = $t('Your coupon was successfully applied.'),
-            data = {},
-            headers = {};
+            message = $t('Your coupon was successfully applied.');
 
-        //Allowing to modify coupon-apply request
-        dataModifiers.forEach(function (modifier) {
-            modifier(headers, data);
-        });
         fullScreenLoader.startLoader();
 
         return storage.put(
             url,
-            data,
-            false,
-            null,
-            headers
+            {},
+            false
         ).done(function (response) {
             var deferred;
 
@@ -63,7 +42,6 @@ define([
 
                 isApplied(true);
                 totals.isLoading(true);
-                recollectShippingRates();
                 getPaymentInformationAction(deferred);
                 $.when(deferred).done(function () {
                     fullScreenLoader.stopLoader();
@@ -72,48 +50,11 @@ define([
                 messageContainer.addSuccessMessage({
                     'message': message
                 });
-                //Allowing to tap into apply-coupon process.
-                successCallbacks.forEach(function (callback) {
-                    callback(response);
-                });
             }
         }).fail(function (response) {
             fullScreenLoader.stopLoader();
             totals.isLoading(false);
             errorProcessor.process(response, messageContainer);
-            //Allowing to tap into apply-coupon process.
-            failCallbacks.forEach(function (callback) {
-                callback(response);
-            });
         });
     };
-
-    /**
-     * Modifying data to be sent.
-     *
-     * @param {Function} modifier
-     */
-    action.registerDataModifier = function (modifier) {
-        dataModifiers.push(modifier);
-    };
-
-    /**
-     * When successfully added a coupon.
-     *
-     * @param {Function} callback
-     */
-    action.registerSuccessCallback = function (callback) {
-        successCallbacks.push(callback);
-    };
-
-    /**
-     * When failed to add a coupon.
-     *
-     * @param {Function} callback
-     */
-    action.registerFailCallback = function (callback) {
-        failCallbacks.push(callback);
-    };
-
-    return action;
 });

@@ -18,8 +18,4 @@
             </argument>
         </arguments>
     </type>
-
-    <preference
-            for="Magento\SalesRule\Model\Spi\CodeLimitManagerInterface"
-            type="Magento\SalesRule\Model\Coupon\AdminCodeLimitManager" />
 </config>

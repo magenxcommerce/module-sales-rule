@@ -5,15 +5,10 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
-declare(strict_types=1);
-
 namespace Magento\SalesRule\Model\Data;
 
-use Magento\Framework\Api\AbstractExtensibleObject;
 use Magento\SalesRule\Api\Data\ConditionInterface;
-use Magento\SalesRule\Api\Data\RuleExtensionInterface;
 use Magento\SalesRule\Api\Data\RuleInterface;
-use Magento\SalesRule\Api\Data\RuleLabelInterface;
 
 /**
  * Class Rule
@@ -21,7 +16,8 @@ use Magento\SalesRule\Api\Data\RuleLabelInterface;
  * @SuppressWarnings(PHPMD.ExcessivePublicCount)
  * @codeCoverageIgnore
  */
-class Rule extends AbstractExtensibleObject implements RuleInterface
+class Rule extends \Magento\Framework\Api\AbstractExtensibleObject implements
+    \Magento\SalesRule\Api\Data\RuleInterface
 {
     const KEY_RULE_ID = 'rule_id';
     const KEY_NAME = 'name';
@@ -192,7 +188,7 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
      * Set whether the coupon is active
      *
      * @param bool $isActive
-     * @return $this
+     * @return bool
      */
     public function setIsActive($isActive)
     {
@@ -202,7 +198,7 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     /**
      * Get condition for the rule
      *
-     * @return ConditionInterface|null
+     * @return \Magento\SalesRule\Api\Data\ConditionInterface|null
      */
     public function getCondition()
     {
@@ -212,7 +208,7 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     /**
      * Set condition for the rule
      *
-     * @param ConditionInterface|null $condition
+     * @param \Magento\SalesRule\Api\Data\ConditionInterface|null $condition
      * @return $this
      */
     public function setCondition(ConditionInterface $condition = null)
@@ -223,7 +219,7 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     /**
      * Get action condition
      *
-     * @return ConditionInterface|null
+     * @return \Magento\SalesRule\Api\Data\ConditionInterface|null
      */
     public function getActionCondition()
     {
@@ -233,7 +229,7 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     /**
      * Set action condition
      *
-     * @param ConditionInterface|null $actionCondition
+     * @param \Magento\SalesRule\Api\Data\ConditionInterface|null $actionCondition
      * @return $this
      */
     public function setActionCondition(ConditionInterface $actionCondition = null)
@@ -275,8 +271,6 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     }
 
     /**
-     * Set Is Advanced
-     *
      * @param bool $isAdvanced
      * @return $this
      */
@@ -288,7 +282,7 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     /**
      * Get display label
      *
-     * @return RuleLabelInterface[]|null
+     * @return \Magento\SalesRule\Api\Data\RuleLabelInterface[]|null
      */
     public function getStoreLabels()
     {
@@ -298,7 +292,7 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     /**
      * Set display label
      *
-     * @param RuleLabelInterface[]|null $storeLabels
+     * @param \Magento\SalesRule\Api\Data\RuleLabelInterface[]|null $storeLabels
      * @return $this
      */
     public function setStoreLabels(array $storeLabels = null)
@@ -380,8 +374,6 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     }
 
     /**
-     * Set Sort Order
-     *
      * @param int $sortOrder
      * @return $this
      */
@@ -625,9 +617,9 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
-     * @return RuleExtensionInterface|null
+     * @return \Magento\SalesRule\Api\Data\RuleExtensionInterface|null
      */
     public function getExtensionAttributes()
     {
@@ -635,13 +627,13 @@ class Rule extends AbstractExtensibleObject implements RuleInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
-     * @param RuleExtensionInterface $extensionAttributes
+     * @param \Magento\SalesRule\Api\Data\RuleExtensionInterface $extensionAttributes
      * @return $this
      */
     public function setExtensionAttributes(
-        RuleExtensionInterface $extensionAttributes
+        \Magento\SalesRule\Api\Data\RuleExtensionInterface $extensionAttributes
     ) {
         return $this->_setExtensionAttributes($extensionAttributes);
     }

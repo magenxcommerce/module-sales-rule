@@ -1,36 +1,20 @@
 <?php
 /**
+ *
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
 namespace Magento\SalesRule\Controller\Adminhtml\Promo\Quote;
 
-use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\App\ObjectManager;
 use Magento\SalesRule\Model\CouponGenerator;
-use Magento\Framework\MessageQueue\PublisherInterface;
-use Magento\SalesRule\Api\Data\CouponGenerationSpecInterfaceFactory;
 
-/**
- * Generate promo quote
- *
- * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
- */
-class Generate extends \Magento\SalesRule\Controller\Adminhtml\Promo\Quote implements HttpPostActionInterface
+class Generate extends \Magento\SalesRule\Controller\Adminhtml\Promo\Quote
 {
     /**
      * @var CouponGenerator
      */
     private $couponGenerator;
-
-    /**
-     * @var PublisherInterface
-     */
-    private $messagePublisher;
-
-    /**
-     * @var CouponGenerationSpecInterfaceFactory
-     */
-    private $generationSpecFactory;
 
     /**
      * Generate constructor.
@@ -39,27 +23,17 @@ class Generate extends \Magento\SalesRule\Controller\Adminhtml\Promo\Quote imple
      * @param \Magento\Framework\App\Response\Http\FileFactory $fileFactory
      * @param \Magento\Framework\Stdlib\DateTime\Filter\Date $dateFilter
      * @param CouponGenerator|null $couponGenerator
-     * @param PublisherInterface|null $publisher
-     * @param CouponGenerationSpecInterfaceFactory|null $generationSpecFactory
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Magento\Framework\Registry $coreRegistry,
         \Magento\Framework\App\Response\Http\FileFactory $fileFactory,
         \Magento\Framework\Stdlib\DateTime\Filter\Date $dateFilter,
-        CouponGenerator $couponGenerator = null,
-        PublisherInterface $publisher = null,
-        CouponGenerationSpecInterfaceFactory $generationSpecFactory = null
+        CouponGenerator $couponGenerator = null
     ) {
         parent::__construct($context, $coreRegistry, $fileFactory, $dateFilter);
         $this->couponGenerator = $couponGenerator ?:
             $this->_objectManager->get(CouponGenerator::class);
-        $this->messagePublisher = $publisher ?: \Magento\Framework\App\ObjectManager::getInstance()
-            ->get(PublisherInterface::class);
-        $this->generationSpecFactory = $generationSpecFactory ?:
-            \Magento\Framework\App\ObjectManager::getInstance()->get(
-                CouponGenerationSpecInterfaceFactory::class
-            );
     }
 
     /**
@@ -88,14 +62,9 @@ class Generate extends \Magento\SalesRule\Controller\Adminhtml\Promo\Quote imple
                     $data = $inputFilter->getUnescaped();
                 }
 
-                $data['quantity'] = isset($data['qty']) ? $data['qty'] : null;
-
-                $couponSpec = $this->generationSpecFactory->create(['data' => $data]);
-
-                $this->messagePublisher->publish('sales_rule.codegenerator', $couponSpec);
-                $this->messageManager->addSuccessMessage(
-                    __('Message is added to queue, wait to get your coupons soon')
-                );
+                $couponCodes = $this->couponGenerator->generateCodes($data);
+                $generated = count($couponCodes);
+                $this->messageManager->addSuccessMessage(__('%1 coupon(s) have been generated.', $generated));
                 $this->_view->getLayout()->initMessages();
                 $result['messages'] = $this->_view->getLayout()->getMessagesBlock()->getGroupedHtml();
             } catch (\Magento\Framework\Exception\InputException $inputException) {
