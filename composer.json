@@ -1,0 +1,50 @@
+{
+    "name": "magenxcommerce/module-sales-rule",
+    "description": "N/A",
+    "config": {
+        "sort-packages": true
+    },
+    "require": {
+        "php": "~7.1.3||~7.2.0||~7.3.0",
+        "magenxcommerce/framework": "102.0.*",
+        "magenxcommerce/module-backend": "101.0.*",
+        "magenxcommerce/module-catalog": "103.0.*",
+        "magenxcommerce/module-catalog-rule": "101.1.*",
+        "magenxcommerce/module-config": "101.1.*",
+        "magenxcommerce/module-customer": "102.0.*",
+        "magenxcommerce/module-directory": "100.3.*",
+        "magenxcommerce/module-eav": "102.0.*",
+        "magenxcommerce/module-payment": "100.3.*",
+        "magenxcommerce/module-quote": "101.1.*",
+        "magenxcommerce/module-reports": "100.3.*",
+        "magenxcommerce/module-rule": "100.3.*",
+        "magenxcommerce/module-sales": "102.0.*",
+        "magenxcommerce/module-shipping": "100.3.*",
+        "magenxcommerce/module-store": "101.0.*",
+        "magenxcommerce/module-ui": "101.1.*",
+        "magenxcommerce/module-widget": "101.1.*",
+        "magenxcommerce/module-captcha": "100.3.*",
+        "magenxcommerce/module-checkout": "100.3.*",
+        "magenxcommerce/module-authorization": "100.3.*"
+    },
+    "suggest": {
+        "magenxcommerce/module-sales-rule-sample-data": "Sample Data version: 100.3.*"
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magento\\SalesRule\\": ""
+        }
+    },
+    "version": "101.1.5",
+    "replace": {
+        "magento/module-sales-rule": "*"
+    }
+}
